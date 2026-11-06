@@ -271,7 +271,12 @@ $('btnX').onclick = cerrar;
 $('fondo').onclick = e => { if (e.target === $('fondo')) cerrar(); };
 $('btnOk').onclick = () => {
   const r = actual; cerrar();
-  if (r) cambiar(r.id, !validados.has(r.id));
+  if (filtro) {  // venía de una búsqueda: limpiar y volver a "Toda la BBDD"
+    $('q').value = ''; filtro = ''; $('limpiar').style.display = 'none'; $('q').blur();
+    modo = 'todos';
+    document.querySelectorAll('#filtros button').forEach(x => x.classList.toggle('on', x.dataset.m === 'todos'));
+  }
+  if (r) cambiar(r.id, !validados.has(r.id)); else render();
 };
 
 render();
