@@ -43,6 +43,7 @@
   .buscar{position:relative}
   .buscar input{width:100%;padding:14px 44px 14px 16px;border:3px solid var(--verde);border-radius:14px;font:700 1.05rem 'Nunito',sans-serif;color:var(--tinta);background:#fff;outline:none}
   .buscar input:focus{border-color:var(--rojo)}
+  .buscar input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
   .limpiar{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;border-radius:50%;background:var(--rojo);color:#fff;font-weight:900;font-size:1rem;cursor:pointer;display:none}
   .letras{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;margin-top:8px}
   @media (min-width:720px){.letras{grid-template-columns:repeat(27,1fr)}}
@@ -52,7 +53,7 @@
   .letras button:disabled{opacity:.22;cursor:default}
 
   /* Listado */
-  .lista{display:flex;flex-direction:column;gap:8px}
+  .lista{display:flex;flex-direction:column;gap:8px;align-content:start;min-height:100vh;min-height:100dvh}
   .reg{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:15px 16px;border:0;border-radius:14px;background:var(--rojo);color:#fff;font:800 1.12rem 'Nunito',sans-serif;cursor:pointer;transition:transform .08s,background .25s}
   .reg:active{transform:scale(.985)}
   .reg .ap{text-transform:uppercase;letter-spacing:.02em}
@@ -96,6 +97,7 @@
     <button class="f-val" data-m="val">Validados<small id="cVal"></small></button>
   </div>
 
+  <div id="ancla"></div>
   <div class="sticky" id="sticky">
     <div class="buscar">
       <input id="q" type="search" placeholder="Buscar nombre o apellido…" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -242,7 +244,10 @@ $('filtros').onclick = e => {
   render();
 };
 
-$('q').addEventListener('input', e => { filtro = e.target.value; $('limpiar').style.display = filtro ? 'block' : 'none'; render(); });
+// Lleva el buscador al borde superior de la pantalla
+const subirBuscador = () => window.scrollTo({top: $('ancla').getBoundingClientRect().top + window.scrollY, behavior: 'auto'});
+$('q').addEventListener('focus', () => { subirBuscador(); setTimeout(subirBuscador, 350); });
+$('q').addEventListener('input', e => { filtro = e.target.value; $('limpiar').style.display = filtro ? 'block' : 'none'; render(); subirBuscador(); });
 $('limpiar').onclick = () => { $('q').value = ''; filtro = ''; $('limpiar').style.display = 'none'; render(); };
 
 $('letras').onclick = e => {
