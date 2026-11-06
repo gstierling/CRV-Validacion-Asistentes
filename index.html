@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cicletada Embajada de Italia · Validación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --verde:#008C45; --verde-osc:#006b35; --blanco:#F4F5F0; --rojo:#CD212A; --rojo-osc:#a5141c;
+    --tinta:#1d2b22; --gris:#6b7770;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--blanco);color:var(--tinta);font-family:'Nunito',system-ui,sans-serif}
+  .bandera{display:flex;height:8px}
+  .bandera i{flex:1}.bandera i:nth-child(1){background:var(--verde)}.bandera i:nth-child(2){background:#fff}.bandera i:nth-child(3){background:var(--rojo)}
+  main{max-width:900px;margin:0 auto;padding:16px 14px 40px}
+  h1{margin:10px 0 18px;text-align:center;font-weight:900;font-size:clamp(1.6rem,6.5vw,2.6rem);line-height:1.1;color:var(--verde)}
+  h1 span{color:var(--rojo)}
+
+  /* Progreso */
+  .barra{position:relative;height:38px;border-radius:19px;background:#fff;border:3px solid var(--rojo);overflow:hidden}
+  .relleno{position:absolute;inset:0 auto 0 0;width:0;background:var(--verde);transition:width .45s ease}
+  .total{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-weight:900;font-size:1.15rem;color:var(--rojo);background:#fff;padding:1px 10px;border-radius:12px}
+  .stats{display:flex;justify-content:space-between;gap:10px;margin:10px 2px 18px;font-weight:800;font-size:clamp(.95rem,4vw,1.2rem)}
+  .stats .ok{color:var(--verde)} .stats .pend{color:var(--rojo);text-align:right}
+  .stats small{font-weight:700;opacity:.85}
+  .stats{margin-bottom:6px}
+  .sync{text-align:center;font-weight:800;font-size:.85rem;margin:0 0 14px;color:var(--gris)}
+  .sync.ok{color:var(--verde)} .sync.off{color:var(--rojo)}
+
+  /* Controles */
+  .toggle{display:block;width:100%;padding:14px;border:0;border-radius:14px;background:var(--verde);color:#fff;font:800 1.05rem 'Nunito',sans-serif;cursor:pointer}
+  .toggle.solo{background:var(--rojo)}
+  .sticky{position:sticky;top:0;z-index:5;background:var(--blanco);padding:10px 0 8px;margin-bottom:6px;border-bottom:2px solid #e3e5dd}
+  .buscar{position:relative}
+  .buscar input{width:100%;padding:14px 44px 14px 16px;border:3px solid var(--verde);border-radius:14px;font:700 1.05rem 'Nunito',sans-serif;color:var(--tinta);background:#fff;outline:none}
+  .buscar input:focus{border-color:var(--rojo)}
+  .limpiar{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;border-radius:50%;background:var(--rojo);color:#fff;font-weight:900;font-size:1rem;cursor:pointer;display:none}
+  .letras{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;margin-top:8px}
+  @media (min-width:720px){.letras{grid-template-columns:repeat(27,1fr)}}
+  .letras button{padding:7px 0;border:0;border-radius:7px;background:var(--verde);color:#fff;font:800 .9rem 'Nunito',sans-serif;cursor:pointer}
+  .letras button:nth-child(3n+2){background:#fff;color:var(--verde);box-shadow:inset 0 0 0 2px var(--verde)}
+  .letras button:nth-child(3n){background:var(--rojo)}
+  .letras button:disabled{opacity:.22;cursor:default}
+
+  /* Listado */
+  .lista{display:flex;flex-direction:column;gap:8px}
+  .reg{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:15px 16px;border:0;border-radius:14px;background:var(--rojo);color:#fff;font:800 1.12rem 'Nunito',sans-serif;cursor:pointer;transition:transform .08s,background .25s}
+  .reg:active{transform:scale(.985)}
+  .reg .ap{text-transform:uppercase;letter-spacing:.02em}
+  .reg .det{display:block;font-size:.8rem;font-weight:700;opacity:.85;margin-top:2px}
+  .reg .chk{margin-left:auto;font-size:1.3rem;display:none}
+  .reg.val{background:var(--verde)}
+  .btn-ok.largo{font-size:1.15rem;line-height:1.2;padding:16px 10px}
+  .reg.val .chk{display:block}
+  .vacio{text-align:center;padding:30px 10px;color:var(--gris);font-weight:800}
+
+  /* Modal */
+  .fondo{position:fixed;inset:0;background:rgba(10,20,14,.6);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
+  .fondo.on{display:flex}
+  .modal{width:100%;max-width:440px;background:#fff;border-radius:22px;padding:26px 20px 24px;text-align:center;border-top:10px solid var(--verde);border-bottom:10px solid var(--rojo);animation:pop .18s ease}
+  @keyframes pop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+  .modal p{margin:0;font-weight:800;font-size:1.15rem;color:var(--gris)}
+  .modal h2{margin:8px 0 24px;font-weight:900;font-size:clamp(1.5rem,7vw,2rem);color:var(--tinta);line-height:1.15}
+  .acciones{position:relative;display:flex;justify-content:center;align-items:center}
+  .btn-ok{width:62%;padding:20px 0;border:0;border-radius:18px;background:var(--verde);color:#fff;font:900 1.8rem 'Nunito',sans-serif;cursor:pointer;box-shadow:0 6px 0 var(--verde-osc)}
+  .btn-ok:active{transform:translateY(3px);box-shadow:0 3px 0 var(--verde-osc)}
+  .btn-x{position:absolute;right:0;width:40px;height:40px;border:0;border-radius:50%;background:var(--rojo);color:#fff;font:900 1.2rem 'Nunito',sans-serif;cursor:pointer;line-height:1}
+
+  footer{text-align:center;color:var(--gris);font-weight:700;font-size:.85rem;margin-top:28px}
+</style>
+</head>
+<body>
+<div class="bandera"><i></i><i></i><i></i></div>
+<main>
+  <h1>Cicletada Embajada <span>de Italia</span></h1>
+
+  <div class="barra"><div class="relleno" id="relleno"></div><span class="total" id="total">0</span></div>
+  <div class="stats">
+    <div class="ok">✔ <span id="nVal">0</span> validados <small>(<span id="pVal">0%</span>)</small></div>
+    <div class="pend"><span id="nPend">0</span> por validar <small>(<span id="pPend">0%</span>)</small></div>
+  </div>
+  <div class="sync wait" id="sync">● Sincronizando…</div>
+
+  <button class="toggle" id="toggle">Mostrar solo no validados</button>
+
+  <div class="sticky" id="sticky">
+    <div class="buscar">
+      <input id="q" type="search" placeholder="Buscar nombre o apellido…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="limpiar" id="limpiar" aria-label="Borrar búsqueda">✕</button>
+    </div>
+    <div class="letras" id="letras"></div>
+  </div>
+
+  <div class="lista" id="lista"></div>
+
+  <footer>CicloRecreoVía · Cicletada Embajada de Italia</footer>
+</main>
+
+<div class="fondo" id="fondo">
+  <div class="modal" role="dialog" aria-modal="true">
+    <p>Registro a</p>
+    <h2 id="mNombre"></h2>
+    <div class="acciones">
+      <button class="btn-ok" id="btnOk">OK</button>
+      <button class="btn-x" id="btnX" aria-label="Cancelar">✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = [{"id": "r2", "n": "Elizabeth", "a": "Aedo", "d": ""}, {"id": "r3", "n": "Ivonne", "a": "Aguila", "d": ""}, {"id": "r4", "n": "Pablo", "a": "Ahumada", "d": ""}, {"id": "r5", "n": "Darwin", "a": "Albarran", "d": ""}, {"id": "r6", "n": "Tabata", "a": "Alfaro", "d": ""}, {"id": "r7", "n": "Pamela", "a": "Alfaro Molino", "d": ""}, {"id": "r8", "n": "Alvaro", "a": "Altuve", "d": ""}, {"id": "r9", "n": "Alexy", "a": "Angulo", "d": ""}, {"id": "r10", "n": "Paulina", "a": "Antivilo", "d": ""}, {"id": "r11", "n": "Jaime", "a": "Aracena Valenciaa", "d": ""}, {"id": "r12", "n": "Tania", "a": "Araya Torres", "d": ""}, {"id": "r13", "n": "Francisco", "a": "Arce", "d": ""}, {"id": "r14", "n": "Marina", "a": "Argandoña", "d": ""}, {"id": "r15", "n": "Nayarett", "a": "Arriagada", "d": ""}, {"id": "r16", "n": "Katherine", "a": "Arriaza", "d": ""}, {"id": "r17", "n": "Emiliano Alonso", "a": "Astudillo Muñoz", "d": ""}, {"id": "r18", "n": "Lorella", "a": "Barducci", "d": ""}, {"id": "r19", "n": "Daniela", "a": "Barros", "d": ""}, {"id": "r20", "n": "Santiago", "a": "Benedetto", "d": ""}, {"id": "r21", "n": "Renzo", "a": "Bertuzzi", "d": ""}, {"id": "r22", "n": "Enrico", "a": "Bertuzzi Leonelli", "d": ""}, {"id": "r23", "n": "Joiver", "a": "Cabrera", "d": ""}, {"id": "r24", "n": "Rodrigo", "a": "Caceres", "d": ""}, {"id": "r25", "n": "Patricia", "a": "Cadenasso Salinas", "d": ""}, {"id": "r26", "n": "Andrea", "a": "Cadin", "d": ""}, {"id": "r27", "n": "Mauricio", "a": "Campos", "d": ""}, {"id": "r28", "n": "Manuel", "a": "Campos", "d": ""}, {"id": "r29", "n": "Belén", "a": "Carvallo", "d": ""}, {"id": "r30", "n": "Juan Miguel", "a": "Casanova Fazio", "d": ""}, {"id": "r31", "n": "Felipe", "a": "Castro", "d": ""}, {"id": "r32", "n": "Monserrat", "a": "Castro Pinto", "d": ""}, {"id": "r33", "n": "Mario", "a": "Clemente", "d": ""}, {"id": "r34", "n": "Marco", "a": "Cobo", "d": ""}, {"id": "r35", "n": "Simone", "a": "Conticelli", "d": ""}, {"id": "r36", "n": "Jeyzen", "a": "Cordovez Huerta", "d": ""}, {"id": "r37", "n": "Nicolas Aaron", "a": "Cornejo Leon", "d": ""}, {"id": "r38", "n": "Daniela", "a": "Cortez", "d": ""}, {"id": "r39", "n": "Felipe", "a": "Dayne", "d": ""}, {"id": "r40", "n": "Rolando", "a": "De la Rivera", "d": ""}, {"id": "r41", "n": "Pierre Emmanuel", "a": "De Laire Robles", "d": ""}, {"id": "r42", "n": "Paulina", "a": "Di Cola Anguita", "d": ""}, {"id": "r43", "n": "José Alexander", "a": "Díaz Medina", "d": ""}, {"id": "r44", "n": "Constanza Javiera", "a": "Diaz Rojas", "d": ""}, {"id": "r45", "n": "Angela", "a": "Duarte Ravello", "d": ""}, {"id": "r46", "n": "Alejandra Carolina", "a": "Espinoza Vargas", "d": ""}, {"id": "r47", "n": "Constanza", "a": "Espinoza Vargas", "d": ""}, {"id": "r48", "n": "Dominicke", "a": "Fattori", "d": ""}, {"id": "r49", "n": "Gonzalo", "a": "Fernández", "d": ""}, {"id": "r50", "n": "Sebastián", "a": "Ferreira", "d": ""}, {"id": "r51", "n": "Macarena", "a": "Ferrer", "d": ""}, {"id": "r52", "n": "Daniela", "a": "Ferrer", "d": ""}, {"id": "r53", "n": "Maria Fernanda", "a": "Flores", "d": ""}, {"id": "r54", "n": "Roman Alberto", "a": "Flores Catillo", "d": ""}, {"id": "r55", "n": "Agustín", "a": "Fredes", "d": ""}, {"id": "r56", "n": "Carola", "a": "Gallegos", "d": ""}, {"id": "r57", "n": "Christiam", "a": "Garcia", "d": ""}, {"id": "r58", "n": "Daniela", "a": "García", "d": ""}, {"id": "r59", "n": "Juan", "a": "Garzon", "d": ""}, {"id": "r60", "n": "Joel", "a": "Giraudio Espinoza", "d": ""}, {"id": "r61", "n": "Yajanys", "a": "Goitia", "d": ""}, {"id": "r62", "n": "Macarena", "a": "Golusda", "d": ""}, {"id": "r63", "n": "Camila", "a": "Gonzalez", "d": ""}, {"id": "r64", "n": "Nicolas", "a": "González", "d": ""}, {"id": "r65", "n": "Felipe", "a": "Griffiths Fonck", "d": ""}, {"id": "r66", "n": "Catalina", "a": "Hernandez", "d": ""}, {"id": "r67", "n": "Sofía", "a": "Hernández Ortiz", "d": ""}, {"id": "r68", "n": "Javier", "a": "Hernández Ortiz", "d": ""}, {"id": "r69", "n": "Analia", "a": "Hurtado", "d": ""}, {"id": "r70", "n": "Esteban", "a": "Iturra", "d": ""}, {"id": "r71", "n": "Pablo", "a": "Leal", "d": ""}, {"id": "r72", "n": "Hernán Enrique", "a": "Ledezma Pollarolo", "d": ""}, {"id": "r73", "n": "Francisco", "a": "Leiva", "d": ""}, {"id": "r74", "n": "Marcos", "a": "Lozano", "d": ""}, {"id": "r75", "n": "Mateo", "a": "Lozano", "d": ""}, {"id": "r76", "n": "Macarena", "a": "Maino", "d": ""}, {"id": "r77", "n": "Patricio", "a": "Manríquez Mery", "d": ""}, {"id": "r78", "n": "René", "a": "Mantilla Tassara", "d": ""}, {"id": "r79", "n": "Laura", "a": "Marcato", "d": ""}, {"id": "r80", "n": "Francesca", "a": "Marchant", "d": ""}, {"id": "r81", "n": "Marido Embajadora", "a": "Marido Embajadora", "d": ""}, {"id": "r82", "n": "Jordán", "a": "Márquez Diaz", "d": ""}, {"id": "r83", "n": "Rodrigo", "a": "Martinez", "d": ""}, {"id": "r84", "n": "Olivia", "a": "Martinez", "d": ""}, {"id": "r85", "n": "Ofelia", "a": "Martinez", "d": ""}, {"id": "r86", "n": "Claudia", "a": "Martinez Lamas", "d": ""}, {"id": "r87", "n": "Facundo", "a": "Méndez Alfaro", "d": ""}, {"id": "r88", "n": "Gabriella", "a": "Molino", "d": "Talla XXL · Pagado"}, {"id": "r89", "n": "Gabriella", "a": "Molino", "d": "Talla M · Pagado"}, {"id": "r90", "n": "Dennis", "a": "Morales", "d": ""}, {"id": "r91", "n": "Milton", "a": "Morales", "d": ""}, {"id": "r92", "n": "Arnaldo", "a": "Motto", "d": ""}, {"id": "r93", "n": "Alesandra", "a": "Moyano", "d": ""}, {"id": "r94", "n": "Macarena", "a": "Muñoz", "d": ""}, {"id": "r95", "n": "María José", "a": "Muñoz Alarcon", "d": ""}, {"id": "r96", "n": "María José", "a": "Muñoz González", "d": ""}, {"id": "r97", "n": "Karina Belén", "a": "Muñoz Zuñiga", "d": ""}, {"id": "r98", "n": "Gabriela", "a": "Nadeau", "d": ""}, {"id": "r99", "n": "Sandra", "a": "Nuñez", "d": ""}, {"id": "r100", "n": "Gabriel", "a": "Nuñez", "d": ""}, {"id": "r101", "n": "Ana", "a": "Nuñez", "d": ""}, {"id": "r102", "n": "Alejandra", "a": "Olivares", "d": ""}, {"id": "r103", "n": "Cony", "a": "Onofaro", "d": ""}, {"id": "r104", "n": "Franca", "a": "Oppici", "d": ""}, {"id": "r105", "n": "Alejandra", "a": "Orellana", "d": ""}, {"id": "r106", "n": "Lucy", "a": "Ortiz Quipayan", "d": ""}, {"id": "r107", "n": "Nelly", "a": "Parra", "d": ""}, {"id": "r108", "n": "Maurice", "a": "Parraud", "d": ""}, {"id": "r109", "n": "Yoel", "a": "Pérez", "d": ""}, {"id": "r110", "n": "Leonardo", "a": "Pezoa", "d": ""}, {"id": "r111", "n": "Fernanda", "a": "Pezoa", "d": ""}, {"id": "r112", "n": "Nicole", "a": "Pezoa", "d": ""}, {"id": "r113", "n": "Constanza", "a": "Pino", "d": ""}, {"id": "r114", "n": "Katherine Lorena", "a": "Pinto Romero", "d": ""}, {"id": "r115", "n": "Rodrigo", "a": "Pizarro", "d": ""}, {"id": "r116", "n": "Por Confirmar", "a": "Por Confirmar", "d": "Talla L · Reale Seguros (Auspiciador)"}, {"id": "r117", "n": "Por Confirmar", "a": "Por Confirmar", "d": "Talla XL · Ministro del deporte"}, {"id": "r118", "n": "Por Confirmar", "a": "Por Confirmar", "d": "Talla L · Polera Adicional (Backup)"}, {"id": "r119", "n": "Gonzalo", "a": "Pulgar Arata", "d": ""}, {"id": "r120", "n": "Rocio", "a": "Quintana", "d": ""}, {"id": "r121", "n": "Paulina", "a": "Ramírez", "d": ""}, {"id": "r122", "n": "Oscar", "a": "Ramírez", "d": ""}, {"id": "r123", "n": "Verónica", "a": "Ramírez Olivares", "d": ""}, {"id": "r124", "n": "Stephania Carolina", "a": "Ramirez Zuñiga", "d": ""}, {"id": "r125", "n": "Jaime", "a": "Retamal Medina", "d": ""}, {"id": "r126", "n": "Guillermo", "a": "Reveco", "d": ""}, {"id": "r127", "n": "Vero", "a": "Reveco Cornejo", "d": ""}, {"id": "r128", "n": "María Gloria", "a": "Riethmuller", "d": ""}, {"id": "r129", "n": "Liliana Andrea", "a": "Rivero", "d": ""}, {"id": "r130", "n": "Gladys Daniela", "a": "Robles Quiroz", "d": ""}, {"id": "r131", "n": "Elimar", "a": "Rodriguez", "d": ""}, {"id": "r132", "n": "Damaris", "a": "Rodríguez", "d": ""}, {"id": "r133", "n": "Lidia", "a": "Rodríguez Parra", "d": ""}, {"id": "r134", "n": "Tamara", "a": "Rodriguez Sandoval", "d": ""}, {"id": "r135", "n": "Darwin", "a": "Rojas", "d": ""}, {"id": "r136", "n": "Cristobal", "a": "Rojas Pino", "d": ""}, {"id": "r137", "n": "Steffany", "a": "Romero", "d": ""}, {"id": "r138", "n": "Javier", "a": "Ronda", "d": ""}, {"id": "r139", "n": "Henry", "a": "Ruiz", "d": ""}, {"id": "r140", "n": "Jonathan", "a": "Ruiz", "d": ""}, {"id": "r141", "n": "Adalind", "a": "Ruiz", "d": ""}, {"id": "r142", "n": "Roxanna", "a": "Salinas Fernandez", "d": ""}, {"id": "r143", "n": "Francisca", "a": "Salomon", "d": ""}, {"id": "r144", "n": "Marcela", "a": "Samarotto", "d": ""}, {"id": "r145", "n": "Nikko Matias", "a": "San Martin Cespedes", "d": ""}, {"id": "r146", "n": "Franco", "a": "Santoro", "d": ""}, {"id": "r147", "n": "Marcelo Eduardo", "a": "Seguel Gonzalez", "d": ""}, {"id": "r148", "n": "Barbara", "a": "Stuppa", "d": ""}, {"id": "r149", "n": "Adriana", "a": "Suarez Delucchi", "d": ""}, {"id": "r150", "n": "Andrea", "a": "Tappi", "d": ""}, {"id": "r151", "n": "José", "a": "Terán", "d": ""}, {"id": "r152", "n": "Juan Pablo", "a": "Urrejola", "d": ""}, {"id": "r153", "n": "Jocelyn", "a": "Viedma", "d": ""}, {"id": "r154", "n": "Silvia", "a": "Villarreal Rangel", "d": ""}, {"id": "r155", "n": "Iris", "a": "Vittori", "d": ""}, {"id": "r156", "n": "Yoselin", "a": "Zambrano", "d": ""}, {"id": "r157", "n": "Claudia", "a": "Zuñiga", "d": "Talla L · Pagado"}, {"id": "r158", "n": "Claudia", "a": "Zuñiga", "d": "Talla L · Ganador Sorteo"}];
+const LS_KEY = 'crv_cicletada_italia_validados_v1';
+const fmt = n => n.toLocaleString('es-CL');
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const normLetra = s => { const c = s.charAt(0).toUpperCase(); return c === 'Ñ' ? 'Ñ' : norm(c).toUpperCase(); };
+
+const API = 'https://script.google.com/macros/s/AKfycbwc6b_DccFt7wsgMt0ssVgPl7qwumUMhN7V0FqgqD8TSOi7TOEuuuEzSzOfFKGF_mE1pQ/exec';
+const ONLINE = /^https:\/\/script\.google\.com\//.test(API);
+const POLL_MS = 10000;
+
+// servidor = último estado leído de la planilla; pend = cambios locales aún no confirmados
+let servidor = new Set(), pend = {}, validados = new Set(), firma = '';
+try {
+  const g = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+  servidor = new Set(g.s || []); pend = g.p || {};
+} catch(e) {}
+const persistir = () => { try { localStorage.setItem(LS_KEY, JSON.stringify({s:[...servidor], p:pend})); } catch(e) {} };
+function recalcular(){
+  validados = new Set(servidor);
+  for (const id in pend) pend[id] ? validados.add(id) : validados.delete(id);
+}
+recalcular();
+
+function jsonp(params){
+  return new Promise((ok, ko) => {
+    const cb = '_cb' + Date.now() + Math.floor(Math.random()*1e6);
+    const s = document.createElement('script');
+    const t = setTimeout(() => fin(new Error('timeout')), 15000);
+    function fin(err, data){ clearTimeout(t); delete window[cb]; s.remove(); err ? ko(err) : ok(data); }
+    window[cb] = d => fin(null, d);
+    s.onerror = () => fin(new Error('red'));
+    s.src = API + '?' + new URLSearchParams({...params, callback: cb, _: Date.now()});
+    document.head.appendChild(s);
+  });
+}
+
+function estado(tipo){
+  const n = Object.keys(pend).length, el = document.getElementById('sync');
+  if (!el) return;
+  el.className = 'sync ' + tipo;
+  el.textContent = !ONLINE ? '● Modo local (sin planilla)'
+    : tipo === 'ok' ? '● Sincronizado con la planilla'
+    : tipo === 'off' ? `● Sin conexión${n ? ` · ${n} cambio${n>1?'s':''} pendiente${n>1?'s':''}` : ''}`
+    : '● Sincronizando…';
+}
+
+let enviando = false;
+async function enviar(){
+  if (!ONLINE || enviando) return;
+  enviando = true; estado('wait');
+  try {
+    for (const id of Object.keys(pend)) {
+      const v = pend[id], r = registros.find(x => x.id === id);
+      const res = await jsonp({action:'set', id, v: v ? 1 : 0, n: r ? r.n : '', a: r ? r.a : ''});
+      if (!res || !res.ok) throw new Error(res && res.error || 'error');
+      if (pend[id] === v) delete pend[id];
+      servidor = new Set(res.validados); persistir();
+    }
+    estado('ok');
+  } catch(e) { estado('off'); }
+  enviando = false; recalcular(); render();
+}
+
+async function sincronizar(){
+  if (!ONLINE || enviando) return;
+  if (Object.keys(pend).length) return enviar();
+  try {
+    const res = await jsonp({action:'list'});
+    if (!res || !res.ok) throw new Error('error');
+    if (enviando || Object.keys(pend).length) return;
+    servidor = new Set(res.validados); persistir(); recalcular(); render(); estado('ok');
+  } catch(e) { estado('off'); }
+}
+
+function cambiar(id, v){
+  pend[id] = v; persistir(); recalcular(); render();
+  ONLINE ? enviar() : (servidor = new Set(validados), pend = {}, persistir());
+}
+
+let soloPendientes = false, filtro = '', actual = null;
+
+const registros = DATA.map(r => ({...r, txt: norm(r.n + ' ' + r.a + ' ' + r.a + ' ' + r.n), letra: normLetra(r.a)}))
+  .sort((x,y) => x.a.localeCompare(y.a,'es',{sensitivity:'base'}) || x.n.localeCompare(y.n,'es',{sensitivity:'base'}));
+
+const $ = id => document.getElementById(id);
+const ABC = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
+$('letras').innerHTML = ABC.map(l => `<button data-l="${l}">${l}</button>`).join('');
+
+function visibles(){
+  const q = norm(filtro.trim());
+  return registros.filter(r => (!soloPendientes || !validados.has(r.id)) && (!q || r.txt.includes(q)));
+}
+
+function render(){
+  const v = visibles();
+  $('lista').innerHTML = v.length ? v.map(r => {
+    const ok = validados.has(r.id);
+    return `<button class="reg${ok?' val':''}" data-id="${r.id}" data-l="${r.letra}">
+      <span><span class="ap">${r.a}</span>, ${r.n}${r.d?`<span class="det">${r.d}</span>`:''}</span>
+      <span class="chk">✔</span></button>`;
+  }).join('') : `<div class="vacio">${soloPendientes && !filtro ? '¡Todos los registros están validados! 🎉' : 'Sin coincidencias'}</div>`;
+
+  const presentes = new Set(v.map(r => r.letra));
+  document.querySelectorAll('#letras button').forEach(b => b.disabled = !presentes.has(b.dataset.l));
+
+  const total = registros.length, nv = registros.filter(r => validados.has(r.id)).length, np = total - nv;
+  const pct = n => total ? (n/total*100).toLocaleString('es-CL',{maximumFractionDigits:1}) + '%' : '0%';
+  $('total').textContent = fmt(total);
+  $('relleno').style.width = (total ? nv/total*100 : 0) + '%';
+  $('nVal').textContent = fmt(nv); $('pVal').textContent = pct(nv);
+  $('nPend').textContent = fmt(np); $('pPend').textContent = pct(np);
+}
+
+$('toggle').onclick = () => {
+  soloPendientes = !soloPendientes;
+  $('toggle').textContent = soloPendientes ? 'Mostrar toda la BBDD' : 'Mostrar solo no validados';
+  $('toggle').classList.toggle('solo', soloPendientes);
+  render();
+};
+
+$('q').addEventListener('input', e => { filtro = e.target.value; $('limpiar').style.display = filtro ? 'block' : 'none'; render(); });
+$('limpiar').onclick = () => { $('q').value = ''; filtro = ''; $('limpiar').style.display = 'none'; render(); };
+
+$('letras').onclick = e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  const el = document.querySelector(`.reg[data-l="${b.dataset.l}"]`); if (!el) return;
+  const off = $('sticky').getBoundingClientRect().height + 8;
+  window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - off, behavior:'smooth'});
+};
+
+$('lista').onclick = e => {
+  const b = e.target.closest('.reg'); if (!b) return;
+  actual = registros.find(r => r.id === b.dataset.id);
+  const yaVal = validados.has(actual.id);
+  $('mNombre').textContent = actual.n + ' ' + actual.a;
+  $('btnOk').textContent = yaVal ? 'Regresar a no validado' : 'OK';
+  $('btnOk').classList.toggle('largo', yaVal);
+  $('fondo').classList.add('on');
+};
+const cerrar = () => { $('fondo').classList.remove('on'); actual = null; };
+$('btnX').onclick = cerrar;
+$('fondo').onclick = e => { if (e.target === $('fondo')) cerrar(); };
+$('btnOk').onclick = () => {
+  const r = actual; cerrar();
+  if (r) cambiar(r.id, !validados.has(r.id));
+};
+
+render();
+estado(ONLINE ? 'wait' : 'ok');
+if (ONLINE) {
+  sincronizar();
+  setInterval(sincronizar, POLL_MS);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) sincronizar(); });
+  window.addEventListener('online', sincronizar);
+}
+</script>
+</body>
+</html>
