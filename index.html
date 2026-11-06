@@ -246,7 +246,6 @@ $('filtros').onclick = e => {
 
 // Lleva el buscador al borde superior de la pantalla
 const subirBuscador = () => window.scrollTo({top: $('ancla').getBoundingClientRect().top + window.scrollY, behavior: 'auto'});
-$('q').addEventListener('focus', () => { subirBuscador(); setTimeout(subirBuscador, 350); });
 $('q').addEventListener('input', e => { filtro = e.target.value; $('limpiar').style.display = filtro ? 'block' : 'none'; render(); subirBuscador(); });
 $('limpiar').onclick = () => { $('q').value = ''; filtro = ''; $('limpiar').style.display = 'none'; render(); };
 
@@ -270,13 +269,15 @@ const cerrar = () => { $('fondo').classList.remove('on'); actual = null; };
 $('btnX').onclick = cerrar;
 $('fondo').onclick = e => { if (e.target === $('fondo')) cerrar(); };
 $('btnOk').onclick = () => {
-  const r = actual; cerrar();
+  const r = actual, filtroPrevio = filtro; cerrar();
   if (filtro) {  // venía de una búsqueda: limpiar y volver a "Toda la BBDD"
     $('q').value = ''; filtro = ''; $('limpiar').style.display = 'none'; $('q').blur();
     modo = 'todos';
     document.querySelectorAll('#filtros button').forEach(x => x.classList.toggle('on', x.dataset.m === 'todos'));
   }
+  const volverArriba = !!filtroPrevio;
   if (r) cambiar(r.id, !validados.has(r.id)); else render();
+  if (volverArriba) window.scrollTo({top: 0, behavior: 'auto'});
 };
 
 render();
