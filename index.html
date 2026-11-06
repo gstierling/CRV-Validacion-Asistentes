@@ -16,14 +16,10 @@
   .bandera{display:flex;height:8px}
   .bandera i{flex:1}.bandera i:nth-child(1){background:var(--verde)}.bandera i:nth-child(2){background:#fff}.bandera i:nth-child(3){background:var(--rojo)}
   main{max-width:900px;margin:0 auto;padding:16px 14px 40px}
-  h1{margin:10px 0 18px;text-align:center;font-weight:900;font-size:clamp(1.6rem,6.5vw,2.6rem);line-height:1.1;color:var(--verde)}
+  h1{margin:10px 0 8px;text-align:center;font-weight:900;font-size:clamp(1.6rem,6.5vw,2.6rem);line-height:1.1;color:var(--verde)}
   h1 span{color:var(--rojo)}
 
   /* Progreso */
-  .stats{display:flex;justify-content:space-between;gap:10px;margin:10px 2px 18px;font-weight:800;font-size:clamp(.95rem,4vw,1.2rem)}
-  .stats .ok{color:var(--verde)} .stats .pend{color:var(--rojo);text-align:right}
-  .stats small{font-weight:700;opacity:.85}
-  .stats{margin-bottom:6px}
   .sync{text-align:center;font-weight:800;font-size:.85rem;margin:0 0 14px;color:var(--gris)}
   .sync.ok{color:var(--verde)} .sync.off{color:var(--rojo)}
 
@@ -81,10 +77,6 @@
 <main>
   <h1>Cicletada Embajada <span>de Italia</span></h1>
 
-  <div class="stats">
-    <div class="ok">✔ <span id="nVal">0</span> validados <small>(<span id="pVal">0%</span>)</small></div>
-    <div class="pend"><span id="nPend">0</span> por validar <small>(<span id="pPend">0%</span>)</small></div>
-  </div>
   <div class="sync wait" id="sync">● Sincronizando…</div>
 
   <div class="filtros" id="filtros">
@@ -225,10 +217,7 @@ function render(){
   document.querySelectorAll('#letras button').forEach(b => b.disabled = !presentes.has(b.dataset.l));
 
   const total = registros.length, nv = registros.filter(r => validados.has(r.id)).length, np = total - nv;
-  const pct = n => total ? (n/total*100).toLocaleString('es-CL',{maximumFractionDigits:1}) + '%' : '0%';
-  $('nVal').textContent = fmt(nv); $('pVal').textContent = pct(nv);
   $('cTodos').textContent = fmt(total); $('cPend').textContent = fmt(np); $('cVal').textContent = fmt(nv);
-  $('nPend').textContent = fmt(np); $('pPend').textContent = pct(np);
 }
 
 $('filtros').onclick = e => {
