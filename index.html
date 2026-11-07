@@ -205,7 +205,7 @@ $('letras').innerHTML = ABC.map(l => `<button data-l="${l}">${l}</button>`).join
 
 function visibles(){
   const q = norm(filtro.trim());
-  return registros.filter(r => (modo === 'todos' || (modo === 'val') === validados.has(r.id)) && (!q || r.txt.includes(q)));
+  return registros.filter(r => (q ? r.txt.includes(q) : (modo === 'todos' || (modo === 'val') === validados.has(r.id))));
 }
 
 // Reduce el tamaño del nombre lo justo para que quepa en una sola línea
